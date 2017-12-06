@@ -15,13 +15,17 @@ std::tuple<int, int> ulam_coord(const uint num) {
     return std::make_tuple(round(z.real()), round(z.imag()));
 }
 
-uint ulam_dist(const uint num) {
+std::tuple<int, int> spiral_coord(const uint num) {
     auto[x, y] = ulam_coord(num);
+    return std::make_tuple(y, -x);
+}
+
+uint spiral_dist(const uint num) {
+    auto[x, y] = spiral_coord(num);
     return abs(x) + abs(y);
 }
 
 int main() {
-    std::cout << ulam_dist(265149) << std::endl;
-
+    std::cout << spiral_dist(265149) << std::endl;
     return 0;
 }

@@ -9,17 +9,17 @@ int main() {
     cin >> data;
     
     size_t length = data.length();
-    int output = 0;
+    int sum = 0;
     for (size_t i = 0; i < length; ++i) {
         int digit = data[i % length] - '0';
         int next_digit = data[(i + 1) % length] - '0';
         
         if (digit == next_digit) {
-            output += digit;
+            sum += digit;
         }
     }
 
-    cout << output;
+    cout << sum;
 
     return 0;
 }
