@@ -1,12 +1,10 @@
 CXX=g++
 CXXFLAGS=-g -std=c++1z -Wall -pedantic
+SRCS=$(wildcard *.cpp)
+BINS=$(SRCS:%.cpp=%)
 
-SRC=$(wildcard *.cpp)
-BIN=$(SRC:%.cpp=%)
-
-all: $(SRC)
-	$(CXX) $(CXXFLAGS) -o $(BIN) $^
-	./$(BIN)
+all:
+	@$(foreach SRC, $(SRCS), echo building $(SRC)... && $(CXX) $(CXXFLAGS) -o $(SRC:%.cpp=%) $(SRC);)
 
 clean:
-	rm $(BIN)
+	rm $(BINS)
