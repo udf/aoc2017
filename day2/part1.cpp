@@ -2,25 +2,24 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <iterator>
 
 using namespace std;
 
 int main() {
     string line;
     uint sum = 0;
+    
     while (getline(cin, line)) {
         istringstream row_stream(line);
-        uint n;
-        row_stream >> n;
-        uint max = n, min = n;
-        while (row_stream >> n) {
-            max = std::max(max, n);
-            min = std::min(min, n);
-        }
-        sum += max - min;
+        auto result = minmax_element(
+            istream_iterator<uint>(row_stream),
+            istream_iterator<uint>()
+        );
+        sum += *result.second - *result.first;
     }
 
-    cout << sum;
+    cout << sum << endl;;
 
     return 0;
 }
