@@ -1,16 +1,17 @@
 import re
+from collections import defaultdict
 
-_old_locals = set(locals())
-id = 0
+reg = defaultdict(int)
+subt = {
+    'inc': '+=',
+    'dec': '-=',
+    'if': 'if'
+}
 
-with open('input.txt') as _f:
-    for _l in _f:
-        _err = True
-        while _err:
-            try:
-                exec(re.sub(r"^(.+)(if.+)$", r"\2:\1", _l).replace('inc', '+=').replace('dec', '-='))
-                _err = False
-            except NameError as _e:
-                exec(re.findall("name '(\w+)' is not defined", str(_e))[0] + ' = 0')
+with open('input.txt') as file:
+    for line in file:
+        line = re.sub(r'^(.+)(if.+)$', r'\2:\1', line)
+        line = re.sub(r'\b([a-z]+)\b', lambda m: subt.get(m.group(1), 'reg["{}"]').format(m.group(1)), line)
+        exec(line)
 
-print(max(eval(reg) for reg in set(locals()) - _old_locals if not reg.startswith('_')))
+print(max(v for k, v in reg.items()))
