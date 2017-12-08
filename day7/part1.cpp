@@ -2,52 +2,73 @@
 #include <string>
 #include <unordered_map>
 #include <sstream>
+#include <vector>
 
 struct Node {
-    bool has_parent;
-    uint weight;
+    Node *parent;
+    std::vector<std::string> children_names;
 
-    Node() {
-        has_parent = false;
-        weight = 0;
+    void add_child(Node *child) {
+        child->parent = this;
     }
 };
+
+template <typename key_t, typename value_t>
+bool has_key(const std::unordered_map<key_t, value_t> &map, const key_t key) {
+    return map.find(key) != map.end();
+}
 
 int main() {
     using namespace std;
     
     string line;
-    unordered_map<string, Node> nodes;
+    unordered_map<string, Node*> nodes;
 
     while (getline(cin, line)) {
         istringstream line_stream(line);
-        string name;
-        line_stream >> name;
-
-        // weight in brackets
         string token;
+
+        // read name
         line_stream >> token;
-        nodes[name].weight = std::stoi(token.substr(1));
+        Node *node = new Node();
+        nodes[token] = node;
+
+        // consume weight
+        line_stream >> token;
 
         // consume arrow
         line_stream >> token;
 
-        // other node names
+        // read other node names, store them as strings for now
         while (line_stream >> token) {
             if (token.back() == ',')
                 token.pop_back();
-            nodes[token].has_parent = true;
+            node->children_names.push_back(token);
         }
     }
 
-    cout << "Nodes without any parents:" << endl;
+    // resolve names of children from strings to pointers
     for (auto it : nodes) {
-        const string name = it.first;
-        Node node = it.second;
-        if (!node.has_parent) {
-            cout << name << endl;
+        Node *node = it.second;
+        for (auto child_name : node->children_names) {
+            if (has_key(nodes, child_name))
+                node->add_child(nodes[child_name]);
+            // note: we would probably warn if we can't find the node by name
         }
     }
 
+    // find root node (first one with no parents)
+    for (auto it : nodes) {
+        Node *node = it.second;
+        if (!node->parent) {
+            cout << it.first << endl;
+            break;
+        }
+    }
+
+    // clean up nodes
+    for (auto it : nodes) {
+        delete it.second;
+    }
     return 0;
 }
