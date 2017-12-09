@@ -19,7 +19,7 @@ int main() {
         sum += *result.second - *result.first;
     }
 
-    cout << sum << endl;;
+    cout << sum << endl;
 
     return 0;
 }
