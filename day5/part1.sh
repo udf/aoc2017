@@ -1,15 +1,21 @@
 #!/bin/bash
-readarray offsets < input.txt
+export LC_ALL=C
+readarray in_offsets < input.txt
+length=${#in_offsets[@]}
+declare -A offsets
+for (( i=0; i< $length; i++)); do
+    offsets[$i]=${in_offsets[$i]}
+done
+
 
 ptr=0
 steps=0
-length=${#offsets[@]}
 while ((ptr >= 0 && ptr < length))
 do
     jmp=${offsets[$ptr]}
     offsets[$ptr]=$((jmp + 1))
     ptr=$((ptr + jmp))
-    steps=$((steps + 1))
+    ((steps++))
 done
 
 echo $steps
