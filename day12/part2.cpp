@@ -34,13 +34,12 @@ int main() {
             std::sregex_iterator(line.begin(), line.end(), digit_capture),
             std::sregex_iterator()
         );
-        std::vector<uint> program_ids;
-        for (auto match : matches) {
-            program_ids.push_back(std::stoi(match.str()));
-        }
+        if (matches.size() < 2)
+            continue;
 
-        for (size_t i = 1; i < program_ids.size(); i++) {
-            links[program_ids[0]].push_back(program_ids[i]);
+        uint parent_id = std::stoi(matches[0].str());
+        for (size_t i = 1; i < matches.size(); i++) {
+            links[parent_id].push_back(std::stoi(matches[i].str()));
         }
     }
 
