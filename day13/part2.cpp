@@ -3,12 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <set>
-
-struct Scanner
-{
-    int position = -1;
-    size_t depth = 0;
-};
+#include <algorithm>
 
 int triangle_wave(int t, int f) {
     return abs(((t+f) % (f*2)) - f);
@@ -19,7 +14,7 @@ int main() {
     using std::endl;
 
     std::string line;
-    std::vector<Scanner> scanners;
+    std::vector<int> scan_depths;
     std::regex digit_capture("(\\d+)");
 
     while(std::getline(std::cin, line)) {
@@ -33,52 +28,43 @@ int main() {
         size_t layer = std::stoi(matches[0].str());
         size_t depth = std::stoi(matches[1].str());
 
-        if (layer >= scanners.size()) {
-            scanners.resize(layer + 1);
+        if (layer >= scan_depths.size()) {
+            scan_depths.resize(layer + 1);
         }
-        scanners[layer].depth = depth;
-        scanners[layer].position = 0;
+        scan_depths[layer] = depth;
     }
 
     int time = 0;
-    bool success = false;
-    int delay;
     std::set<int> packets;
 
-    do {
-        // fire packet if we can
-        if (scanners[0].position > 0)
-            packets.insert(time);
+    while (true) {
+        packets.insert(time);
 
-        for (auto it = packets.begin(); it != packets.end(); ) {
-            int position = time - *it;
-
-            // if packet has made it to the end then stop
-            if (position >= (int)scanners.size()) {
-                delay = *it;
-                success = true;
-                break;
-            }
-
-            // remove packets that have moved into a scanner
-            if (scanners[position].position == 0) {
-                it = packets.erase(it);
+        for (size_t i = 0; i < scan_depths.size(); ++i) {
+            if (scan_depths[i] == 0) {
                 continue;
             }
 
-            it++;
+            const int position = triangle_wave(time + 1, scan_depths[i] - 1);
+
+            // if we are at position 0, remove the packet if there is one
+            if (time >= (int)i && position == 0) {
+                packets.erase(time - i);
+            }
         }
 
-        // move all scanners
-        for (size_t i = 0; i < scanners.size(); ++i) {
-            if (scanners[i].depth > 0)
-                scanners[i].position = triangle_wave(time + 1, scanners[i].depth-1);
+        // if packet with the lowest delay has made it to the end then stop
+        if (packets.size() > 0) {
+            const auto lowest_it = std::min_element(packets.begin(), packets.end());
+            const int position = time - *lowest_it;
+            if (position >= (int)scan_depths.size()) {
+                cout << "packet #" << ((*lowest_it) + 1) << " has made it through " << endl;
+                break;
+            }
         }
-
         time++;
-    } while(!success);
+    }
 
-    cout << delay << endl;
 
     return 0;
 }
