@@ -23,30 +23,28 @@ void reverse_section(
 }
 
 void knot_hash(const char *data, char* output, const size_t iter_count) {
-    const char *PREFIX = "\x11\x1f\x49\x2f\x17";
+    const unsigned char *PREFIX = "\x11\x1f\x49\x2f\x17";
+    const size_t PREFIX_LEN = 5;
 
     // set up data
     char sparse_hash[SPARSE_LEN];
     for (size_t i = 0; i < SPARSE_LEN; i++)
         sparse_hash[i] = i;
 
-    // concat prefix to the end of the read data
-    size_t lengths_count = strlen(data) + strlen(PREFIX);
-    char *lengths = (char*)malloc(lengths_count + 1);
-    strcat(lengths, data);
-    strcat(lengths, PREFIX);
+    const size_t data_len = strlen(data);
 
     // calculate sparse hash
     size_t position = 0;
     size_t skip = 0;
     for (size_t iters = 0; iters < iter_count; iters++) {
-        for (size_t i = 0; i < lengths_count; i++) {
-            reverse_section(sparse_hash, SPARSE_LEN, position, lengths[i]);
-            position = (position + lengths[i] + skip) % SPARSE_LEN;
+        for (size_t i = 0; i < data_len + PREFIX_LEN; i++) {
+            unsigned char length = i < data_len ? data[i] : PREFIX[i - data_len];
+            
+            reverse_section(sparse_hash, SPARSE_LEN, position, length);
+            position = (position + length + skip) % SPARSE_LEN;
             skip++;
         }
     }
-    free(lengths);
 
     // calculate and output dense hash
     for (size_t i = 0; i < DENSE_LEN; i++) {
