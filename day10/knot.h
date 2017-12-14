@@ -6,17 +6,14 @@
 #define DENSE_BLOCK 16
 #define DENSE_LEN SPARSE_LEN/DENSE_BLOCK
 
-void reverse_section(
-    char list[], const size_t list_length,
-    const size_t start, const size_t section_length) {
-
+void reverse_section(char list[], const size_t start, const size_t section_length) {
     const size_t half_section = section_length / 2;
 
     for (size_t i = 0; i < half_section; ++i) {
-        const size_t first_i = (i + start) % list_length;
-        const size_t second_i = (section_length - i - 1 + start) % list_length;
+        const unsigned char first_i = i + start;
+        const unsigned char second_i = section_length - i - 1 + start;
 
-        char temp = list[first_i];
+        const char temp = list[first_i];
         list[first_i] = list[second_i];
         list[second_i] = temp;
     }
@@ -34,14 +31,14 @@ void knot_hash(const char *data, char* output, const size_t iter_count) {
     const size_t data_len = strlen(data);
 
     // calculate sparse hash
-    size_t position = 0;
+    unsigned char position = 0;
     size_t skip = 0;
     for (size_t iters = 0; iters < iter_count; iters++) {
         for (size_t i = 0; i < data_len + PREFIX_LEN; i++) {
-            unsigned char length = i < data_len ? data[i] : PREFIX[i - data_len];
-            
-            reverse_section(sparse_hash, SPARSE_LEN, position, length);
-            position = (position + length + skip) % SPARSE_LEN;
+            const unsigned char length = i < data_len ? data[i] : PREFIX[i - data_len];
+    
+            reverse_section(sparse_hash, position, length);
+            position = position + length + skip;
             skip++;
         }
     }
