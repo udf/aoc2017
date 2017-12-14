@@ -11,10 +11,7 @@ int main() {
 
     char hash[32];
     knot_hash_64(in_data, hash);
-    for (int i = 0; i < 32; ++i) {
-        printf("%c", hash[i]);
-    }
-    printf("\n");
+    printf("%s\n", hash);
 
     free(in_data);
 
