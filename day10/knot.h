@@ -54,7 +54,7 @@ void knot_hash(const char *data, char* output, const size_t iter_count) {
         for (size_t j = 1; j < DENSE_BLOCK; j++) {
             dense_hash ^= sparse_hash[i * DENSE_BLOCK + j];
         }
-        sprintf(output + i*2, "%x", dense_hash & 0xff);
+        sprintf(output + i*2, "%02x", dense_hash & 0xff);
     }
 }
 
