@@ -3,10 +3,11 @@
 #include <unordered_map>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 struct Node {
-    Node *parent;
-    std::vector<Node*> children;
+    std::shared_ptr<Node> parent;
+    std::vector<std::shared_ptr<Node>> children;
     std::vector<std::string> children_names;
     uint weight;
     uint tower_weight;
@@ -17,11 +18,6 @@ struct Node {
         weight = 0;
         tower_weight = 0;
         is_balanced = true;
-    }
-
-    void add_child(Node *child) {
-        this->children.push_back(child);
-        child->parent = this;
     }
 
     void weigh_tower() {
@@ -59,20 +55,20 @@ int main() {
     using namespace std;
     
     string line;
-    unordered_map<string, Node*> nodes;
+    unordered_map<string, std::shared_ptr<Node>> nodes;
 
     while (getline(cin, line)) {
         istringstream line_stream(line);
         string token;
 
         // read name
-        line_stream >> token;
-        Node *node = new Node(token);
-        nodes[token] = node;
+        string name;
+        line_stream >> name;
+        nodes[name] = std::make_shared<Node>(name);
 
         // read weight (in brackets)
         line_stream >> token;
-        node->weight = std::stoi(token.substr(1));
+        nodes[name]->weight = std::stoi(token.substr(1));
 
         // consume arrow
         line_stream >> token;
@@ -81,24 +77,26 @@ int main() {
         while (line_stream >> token) {
             if (token.back() == ',')
                 token.pop_back();
-            node->children_names.push_back(token);
+            nodes[name]->children_names.push_back(token);
         }
     }
 
     // resolve names of children from strings to pointers
     for (auto it : nodes) {
-        Node *node = it.second;
+        std::shared_ptr<Node> node = it.second;
         for (auto child_name : node->children_names) {
-            if (has_key(nodes, child_name))
-                node->add_child(nodes[child_name]);
+            if (has_key(nodes, child_name)) {
+                nodes[child_name]->parent = node;
+                node->children.push_back(nodes[child_name]);
+            }
             // note: we would probably warn if we can't find the node by name
         }
     }
 
-    // find root node (first one with no parents)
-    Node *root;
+    // find root node (first one with no parent)
+    std::shared_ptr<Node> root;
     for (auto it : nodes) {
-        Node *node = it.second;
+        std::shared_ptr<Node> node = it.second;
         if (!node->parent) {
             root = node;
             break;
@@ -129,11 +127,6 @@ int main() {
     // TODO: figure out how to find the offending node instead of doing it manually
     for (auto child : root->children) {
         cout << child->name << " w:" << child->weight << " tw:" << child->tower_weight << endl;
-    }
-
-    // clean up nodes
-    for (auto it : nodes) {
-        delete it.second;
     }
     return 0;
 }
