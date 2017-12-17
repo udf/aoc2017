@@ -8,7 +8,9 @@ int main() {
     uint pos = 0;
     uint after_0 = 0;
     for (uint i = 1; i <= 50000000; i++) {
-        pos = (pos + step) % i;
+        pos += step;
+        while (pos >= i)
+            pos -= i;
 
         if (pos == 0) {
             after_0 = i;
