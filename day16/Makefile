@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-g -std=c++1z -Wall -pedantic
+CXXFLAGS=-g -std=c++1z -Wall -pedantic -Ofast
 SRCS=$(wildcard *.cpp)
 BINS=$(SRCS:%.cpp=%)
 

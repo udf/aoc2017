@@ -1,6 +1,8 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
+#include <functional>
 
 void spin(std::string &str) {
     const char last = str.back();
@@ -25,23 +27,35 @@ int main() {
     using std::endl;
 
     std::string programs = "abcdefghijklmnop";
+    std::vector<std::function<void()>> instructions;
 
+    // load instructions into vector of functions
     char instruction;
     while(std::cin >> instruction) {
         switch (instruction) {
         case 's': // spin
             int size;
             std::cin >> size;
-            for (int i = 0; i < size; i++) {
-                spin(programs);
-            }
+
+            instructions.push_back(
+                [&programs, size]() {
+                    for (int i = 0; i < size; i++) {
+                        spin(programs);
+                    }
+                }
+            );
             break;
         case 'x': // swap by index
             unsigned i1, i2;
             std::cin >> i1;
             std::cin >> instruction; // consume delimiter
             std::cin >> i2;
-            swapi(programs, i1, i2);
+
+            instructions.push_back(
+                [&programs, i1, i2]() {
+                    swapi(programs, i1, i2);
+                }
+            );
             break;
         case 'p': // swap by value
             char c1, c2;
@@ -49,9 +63,29 @@ int main() {
             std::cin >> instruction; // consume delimiter
             std::cin >> c2;
 
-            swapv(programs, c1, c2);
+            instructions.push_back(
+                [&programs, c1, c2]() {
+                    swapv(programs, c1, c2);
+                }
+            );
             break;
         }
+    }
+
+    // find out how many iters it takes before we loop back to the starting position
+    size_t loop_iters;
+    for (loop_iters = 1; loop_iters < 1000000000; loop_iters++) {
+        for (const auto instruction : instructions)
+            instruction();
+        if (programs == "abcdefghijklmnop") {
+            break;
+        }
+    }
+
+    // run as many instructions as we need to
+    for (size_t i = 0; i < 1000000000 % loop_iters; i++) {
+        for (const auto instruction : instructions)
+            instruction();
     }
 
     cout << programs << endl;
