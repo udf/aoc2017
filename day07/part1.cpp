@@ -3,14 +3,11 @@
 #include <unordered_map>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 struct Node {
-    Node *parent;
+    std::shared_ptr<Node> parent;
     std::vector<std::string> children_names;
-
-    void add_child(Node *child) {
-        child->parent = this;
-    }
 };
 
 template <typename key_t, typename value_t>
@@ -22,16 +19,16 @@ int main() {
     using namespace std;
     
     string line;
-    unordered_map<string, Node*> nodes;
+    unordered_map<string, std::shared_ptr<Node>> nodes;
 
     while (getline(cin, line)) {
         istringstream line_stream(line);
         string token;
 
         // read name
-        line_stream >> token;
-        Node *node = new Node();
-        nodes[token] = node;
+        string name;
+        line_stream >> name;
+        nodes[name] = std::make_shared<Node>();
 
         // consume weight
         line_stream >> token;
@@ -43,32 +40,29 @@ int main() {
         while (line_stream >> token) {
             if (token.back() == ',')
                 token.pop_back();
-            node->children_names.push_back(token);
+            nodes[name]->children_names.push_back(token);
         }
     }
 
     // resolve names of children from strings to pointers
     for (auto it : nodes) {
-        Node *node = it.second;
+        std::shared_ptr<Node> node = it.second;
         for (auto child_name : node->children_names) {
-            if (has_key(nodes, child_name))
-                node->add_child(nodes[child_name]);
+            if (has_key(nodes, child_name)) {
+                nodes[child_name]->parent = node;
+            }
             // note: we would probably warn if we can't find the node by name
         }
     }
 
-    // find root node (first one with no parents)
+    // find root node (first one with no parent)
     for (auto it : nodes) {
-        Node *node = it.second;
+        std::shared_ptr<Node> node = it.second;
         if (!node->parent) {
             cout << it.first << endl;
             break;
         }
     }
 
-    // clean up nodes
-    for (auto it : nodes) {
-        delete it.second;
-    }
     return 0;
 }
